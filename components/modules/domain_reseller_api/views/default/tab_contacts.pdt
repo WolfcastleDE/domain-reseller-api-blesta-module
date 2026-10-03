@@ -1,0 +1,114 @@
+<?php
+$client = !empty($client);
+$contact_fields = ['first_name', 'last_name', 'company', 'email', 'phone', 'address1', 'address2', 'city', 'state', 'zip', 'country'];
+$roles_by_handle = [];
+foreach (($roles ?? []) as $role => $handle) {
+    $roles_by_handle[$handle][] = $this->_('DomainResellerApi.contacts.role_' . $role, true);
+}
+?>
+<div class="domain-reseller-api<?php echo $client ? ' p-3' : ''; ?>">
+    <h6 class="form-section-header"><?php $this->_('DomainResellerApi.tab_contacts.heading'); ?></h6>
+
+    <?php if (!empty($pending)) { ?>
+    <div class="alert alert-info"><?php $this->_('DomainResellerApi.!notice.pending'); ?></div>
+    <?php } ?>
+
+    <?php if (empty($contacts)) { ?>
+    <div class="alert alert-info"><?php $this->_('DomainResellerApi.tab_contacts.no_contacts'); ?></div>
+    <?php
+    } else {
+        $this->Form->create();
+        $this->Form->fieldHidden('action', 'update_contacts');
+        $editable = 0;
+        foreach ($contacts as $handle => $contact) {
+            $is_protected = in_array($handle, ($protected_handles ?? []), true);
+            $prefix = 'contact_' . md5($handle) . '_';
+    ?>
+    <div class="card mb-3">
+        <div class="card-header">
+            <strong><?php echo $this->Html->safe(implode(', ', $roles_by_handle[$handle] ?? [])); ?></strong>
+            <span class="text-muted ms-2 ml-2"><?php $this->_('DomainResellerApi.contacts.handle', false, $this->Html->safe($handle)); ?></span>
+        </div>
+        <div class="card-body">
+            <?php if ($is_protected) { ?>
+            <p class="text-muted"><?php $this->_('DomainResellerApi.contacts.protected'); ?></p>
+            <dl class="row mb-0">
+                <?php
+                foreach ($contact_fields as $field) {
+                    if (($contact[$field] ?? '') === '') {
+                        continue;
+                    }
+                ?>
+                <dt class="col-sm-4"><?php $this->_('DomainResellerApi.contacts.field_' . $field); ?></dt>
+                <dd class="col-sm-8"><?php echo $this->Html->safe($contact[$field]); ?></dd>
+                <?php } ?>
+            </dl>
+            <?php
+            } else {
+                $editable++;
+            ?>
+            <div class="row">
+                <?php foreach ($contact_fields as $field) { ?>
+                <div class="col-md-6 mb-3">
+                    <?php
+                    $this->Form->label($this->_('DomainResellerApi.contacts.field_' . $field, true), $prefix . $field, ['class' => 'form-label']);
+                    $this->Form->fieldText(
+                        'contacts[' . $handle . '][' . $field . ']',
+                        $vars->contacts[$handle][$field] ?? ($contact[$field] ?? ''),
+                        ['id' => $prefix . $field, 'class' => 'form-control', 'maxlength' => ($field == 'country' ? 2 : 255)]
+                    );
+                    ?>
+                </div>
+                <?php } ?>
+            </div>
+            <?php } ?>
+        </div>
+    </div>
+    <?php
+        }
+
+        if ($editable > 0 && empty($pending)) {
+    ?>
+    <div class="d-flex justify-content-end mb-4">
+        <?php $this->Form->fieldSubmit('save', $this->_('DomainResellerApi.tab_contacts.field_update', true), ['class' => 'btn btn-primary']); ?>
+    </div>
+    <?php
+        }
+        $this->Form->end();
+    }
+
+    if (!$client && empty($pending) && !empty($handles)) {
+        $this->Form->create();
+        $this->Form->fieldHidden('action', 'assign_handles');
+    ?>
+    <h6 class="form-section-header mt-4"><?php $this->_('DomainResellerApi.tab_contacts.heading_assign'); ?></h6>
+    <p class="text-muted"><?php $this->_('DomainResellerApi.tab_contacts.assign_description'); ?></p>
+    <div class="row">
+        <?php
+        foreach (['owner', 'admin', 'tech', 'billing'] as $role) {
+            $options = ['' => $this->_('DomainResellerApi.tab_contacts.keep_current', true)] + $handles;
+        ?>
+        <div class="col-md-6 mb-3">
+            <?php
+            $this->Form->label(
+                $this->_('DomainResellerApi.contacts.role_' . $role, true) . (isset($roles[$role]) ? ' (' . $roles[$role] . ')' : ''),
+                'handle_' . $role,
+                ['class' => 'form-label']
+            );
+            $this->Form->fieldSelect('handles[' . $role . ']', $options, ($vars->handles[$role] ?? ''), ['id' => 'handle_' . $role, 'class' => 'form-select form-control']);
+            ?>
+        </div>
+        <?php } ?>
+    </div>
+    <div class="mb-3 form-check">
+        <?php $this->Form->fieldCheckbox('confirm_owner_change', '1', ($vars->confirm_owner_change ?? '0') == '1', ['id' => 'confirm_owner_change', 'class' => 'form-check-input']); ?>
+        <?php $this->Form->label($this->_('DomainResellerApi.tab_contacts.confirm_owner_change', true), 'confirm_owner_change', ['class' => 'form-check-label']); ?>
+    </div>
+    <div class="d-flex justify-content-end">
+        <?php $this->Form->fieldSubmit('assign', $this->_('DomainResellerApi.tab_contacts.field_assign', true), ['class' => 'btn btn-primary']); ?>
+    </div>
+    <?php
+        $this->Form->end();
+    }
+    ?>
+</div>

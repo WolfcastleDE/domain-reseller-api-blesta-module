@@ -1,0 +1,39 @@
+{
+    "version": "1.0.0",
+    "type": "registrar",
+    "name": "DomainResellerApi.name",
+    "description": "DomainResellerApi.description",
+    "authors": [
+        {
+            "name": "Wolfscastle",
+            "url": "https://domain-reseller-api.de"
+        }
+    ],
+    "module": {
+        "row": "DomainResellerApi.module_row",
+        "rows": "DomainResellerApi.module_row_plural",
+        "group": "DomainResellerApi.module_group",
+        "row_key": "label"
+    },
+    "package": {
+        "name_key": "domain"
+    },
+    "service": {
+        "name_key": "domain"
+    },
+    "email_tags": {
+        "module": ["label"],
+        "package": [],
+        "service": ["domain", "ns1", "ns2", "ns3", "ns4", "ns5"]
+    },
+    "features": {
+        "dns_management": 1,
+        "email_forwarding": 0,
+        "id_protection": 1,
+        "epp_code": 1
+    },
+    "logo": {
+        "light": "views/default/images/logo.png",
+        "dark": "views/default/images/logo-dark.png"
+    }
+}

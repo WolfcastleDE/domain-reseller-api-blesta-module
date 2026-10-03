@@ -1,0 +1,74 @@
+<?php
+// Shared form of add_row.pdt and edit_row.pdt ($edit = true when editing)
+$this->Widget->clear();
+$this->Widget->setLinkButtons([]);
+$this->Form->create();
+$this->Widget->create($this->_($edit ? 'DomainResellerApi.edit_row.box_title' : 'DomainResellerApi.add_row.box_title', true));
+?>
+<h6 class="form-section-header mt-1"><?php $this->_('DomainResellerApi.row_meta.heading_account'); ?></h6>
+<div class="mb-3">
+    <?php $this->Form->label($this->_('DomainResellerApi.row_meta.label', true), 'label', ['class' => 'form-label']); ?>
+    <?php $this->Form->fieldText('label', ($vars->label ?? null), ['id' => 'label', 'class' => 'form-control']); ?>
+    <div class="form-text"><?php $this->_('DomainResellerApi.row_meta.tooltip.label'); ?></div>
+</div>
+<div class="mb-3">
+    <?php $this->Form->label($this->_('DomainResellerApi.row_meta.api_key', true), 'api_key', ['class' => 'form-label']); ?>
+    <?php
+    $key_attributes = ['id' => 'api_key', 'class' => 'form-control', 'autocomplete' => 'new-password'];
+    if ($edit) {
+        $key_attributes['placeholder'] = $this->_('DomainResellerApi.row_meta.api_key_keep', true);
+    } else {
+        $key_attributes['value'] = $vars->api_key ?? null;
+    }
+    $this->Form->fieldPassword('api_key', $key_attributes);
+    ?>
+    <div class="form-text"><?php $this->_('DomainResellerApi.row_meta.tooltip.api_key'); ?></div>
+</div>
+<div class="mb-3">
+    <?php $this->Form->label($this->_('DomainResellerApi.row_meta.api_url', true), 'api_url', ['class' => 'form-label']); ?>
+    <?php $this->Form->fieldText('api_url', ($vars->api_url ?? null), ['id' => 'api_url', 'class' => 'form-control']); ?>
+    <div class="form-text"><?php $this->_('DomainResellerApi.row_meta.tooltip.api_url'); ?></div>
+</div>
+<div class="mb-3 form-check">
+    <?php $this->Form->fieldCheckbox('sandbox', 'true', ($vars->sandbox ?? 'false') == 'true', ['id' => 'sandbox', 'class' => 'form-check-input']); ?>
+    <?php $this->Form->label($this->_('DomainResellerApi.row_meta.sandbox', true), 'sandbox', ['class' => 'form-check-label']); ?>
+    <div class="form-text"><?php $this->_('DomainResellerApi.row_meta.tooltip.sandbox'); ?></div>
+</div>
+
+<h6 class="form-section-header mt-4"><?php $this->_('DomainResellerApi.row_meta.heading_options'); ?></h6>
+<div class="mb-3 form-check">
+    <?php $this->Form->fieldCheckbox('allow_premium', 'true', ($vars->allow_premium ?? 'false') == 'true', ['id' => 'allow_premium', 'class' => 'form-check-input']); ?>
+    <?php $this->Form->label($this->_('DomainResellerApi.row_meta.allow_premium', true), 'allow_premium', ['class' => 'form-check-label']); ?>
+    <div class="form-text"><?php $this->_('DomainResellerApi.row_meta.tooltip.allow_premium'); ?></div>
+</div>
+<div class="mb-3">
+    <?php $this->Form->label($this->_('DomainResellerApi.row_meta.cancel_action', true), 'cancel_action', ['class' => 'form-label']); ?>
+    <?php $this->Form->fieldSelect('cancel_action', ($cancel_actions ?? []), ($vars->cancel_action ?? 'schedule_delete'), ['id' => 'cancel_action', 'class' => 'form-select form-control']); ?>
+    <div class="form-text"><?php $this->_('DomainResellerApi.row_meta.tooltip.cancel_action'); ?></div>
+</div>
+<div class="mb-3">
+    <?php $this->Form->label($this->_('DomainResellerApi.row_meta.fallback_phone', true), 'fallback_phone', ['class' => 'form-label']); ?>
+    <?php $this->Form->fieldText('fallback_phone', ($vars->fallback_phone ?? null), ['id' => 'fallback_phone', 'class' => 'form-control', 'placeholder' => '+49.301234567']); ?>
+    <div class="form-text"><?php $this->_('DomainResellerApi.row_meta.tooltip.fallback_phone'); ?></div>
+</div>
+
+<h6 class="form-section-header mt-4"><?php $this->_('DomainResellerApi.row_meta.heading_handles'); ?></h6>
+<p class="text-muted"><?php $this->_('DomainResellerApi.row_meta.handles_description'); ?></p>
+<?php foreach (['admin', 'tech', 'billing'] as $role) { ?>
+<div class="mb-3">
+    <?php $this->Form->label($this->_('DomainResellerApi.row_meta.' . $role . '_handle', true), $role . '_handle', ['class' => 'form-label']); ?>
+    <?php $this->Form->fieldText($role . '_handle', ($vars->{$role . '_handle'} ?? null), ['id' => $role . '_handle', 'class' => 'form-control']); ?>
+</div>
+<?php } ?>
+
+<?php
+if (method_exists($this->Widget, 'footer')) {
+    $this->Widget->footer();
+}
+?>
+<div class="d-flex justify-content-end">
+    <?php $this->Form->fieldSubmit('save', $this->_($edit ? 'DomainResellerApi.edit_row.edit_btn' : 'DomainResellerApi.add_row.add_btn', true), ['class' => 'btn btn-primary']); ?>
+</div>
+<?php
+$this->Widget->end();
+$this->Form->end();

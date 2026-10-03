@@ -1,0 +1,47 @@
+<?php $client = !empty($client); ?>
+<div class="domain-reseller-api<?php echo $client ? ' p-3' : ''; ?>">
+    <h6 class="form-section-header"><?php $this->_('DomainResellerApi.tab_nameservers.heading'); ?></h6>
+
+    <?php if (!empty($pending)) { ?>
+    <div class="alert alert-info"><?php $this->_('DomainResellerApi.!notice.pending'); ?></div>
+    <?php } ?>
+
+    <?php $this->Form->create(null, ['id' => 'domain_reseller_api_nameservers']); ?>
+    <div class="mb-3 form-check">
+        <?php $this->Form->fieldCheckbox('use_managed_dns', '1', ($vars->use_managed_dns ?? '0') == '1', ['id' => 'use_managed_dns', 'class' => 'form-check-input']); ?>
+        <?php $this->Form->label($this->_('DomainResellerApi.tab_nameservers.use_managed_dns', true), 'use_managed_dns', ['class' => 'form-check-label']); ?>
+        <div class="form-text"><?php $this->_('DomainResellerApi.tab_nameservers.use_managed_dns_description', false, $this->Html->safe(implode(', ', $managed_nameservers ?? []))); ?></div>
+    </div>
+
+    <div id="domain_reseller_api_custom_ns">
+        <?php foreach (($nameserver_fields ?? []) as $name => $field) { ?>
+        <div class="mb-3">
+            <?php
+            $this->Form->label($field['label'], $name, ['class' => 'form-label']);
+            $this->Form->fieldText($name, ($vars->{$name} ?? ''), ['id' => $name, 'class' => 'form-control', 'placeholder' => $field['label']]);
+            ?>
+        </div>
+        <?php } ?>
+    </div>
+
+    <?php if (empty($pending)) { ?>
+    <div class="d-flex justify-content-end">
+        <?php $this->Form->fieldSubmit('save', $this->_('DomainResellerApi.tab_nameservers.field_update', true), ['class' => 'btn btn-primary']); ?>
+    </div>
+    <?php } ?>
+    <?php $this->Form->end(); ?>
+</div>
+<script type="text/javascript">
+    (function () {
+        var checkbox = document.getElementById('use_managed_dns');
+        var custom = document.getElementById('domain_reseller_api_custom_ns');
+        if (!checkbox || !custom) {
+            return;
+        }
+        var toggle = function () {
+            custom.style.display = checkbox.checked ? 'none' : '';
+        };
+        checkbox.addEventListener('change', toggle);
+        toggle();
+    })();
+</script>

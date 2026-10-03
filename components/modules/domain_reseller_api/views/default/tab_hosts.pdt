@@ -1,0 +1,77 @@
+<?php $client = !empty($client); ?>
+<div class="domain-reseller-api<?php echo $client ? ' p-3' : ''; ?>">
+    <h6 class="form-section-header"><?php $this->_('DomainResellerApi.tab_hosts.heading'); ?></h6>
+
+    <?php if (!empty($pending)) { ?>
+    <div class="alert alert-info"><?php $this->_('DomainResellerApi.!notice.pending'); ?></div>
+    <?php } ?>
+
+    <p class="text-muted"><?php $this->_('DomainResellerApi.tab_hosts.description', false, $this->Html->safe($domain ?? '')); ?></p>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th><?php $this->_('DomainResellerApi.tab_hosts.heading_hostname'); ?></th>
+                    <th><?php $this->_('DomainResellerApi.tab_hosts.heading_ipv4'); ?></th>
+                    <th><?php $this->_('DomainResellerApi.tab_hosts.heading_ipv6'); ?></th>
+                    <th><?php $this->_('DomainResellerApi.tab_hosts.heading_options'); ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($hosts)) { ?>
+                <tr>
+                    <td colspan="4" class="text-muted"><?php $this->_('DomainResellerApi.tab_hosts.no_hosts'); ?></td>
+                </tr>
+                <?php
+                }
+                foreach (($hosts ?? []) as $host) {
+                ?>
+                <tr>
+                    <td><?php echo $this->Html->safe($host['hostname'] ?? ''); ?></td>
+                    <td><?php echo $this->Html->safe($host['ipv4'] ?? ''); ?></td>
+                    <td><?php echo $this->Html->safe($host['ipv6'] ?? ''); ?></td>
+                    <td class="text-nowrap">
+                        <?php
+                        $this->Form->create(null, ['class' => 'd-inline']);
+                        $this->Form->fieldHidden('action', 'delete');
+                        $this->Form->fieldHidden('hostname', $host['hostname'] ?? '');
+                        ?>
+                        <button type="submit" class="btn btn-sm btn-outline-danger"><?php $this->_('DomainResellerApi.tab_hosts.field_delete_short'); ?></button>
+                        <?php $this->Form->end(); ?>
+                    </td>
+                </tr>
+                <?php } ?>
+            </tbody>
+        </table>
+    </div>
+
+    <?php
+    if (empty($pending)) {
+        $this->Form->create();
+        $this->Form->fieldHidden('action', 'save');
+    ?>
+    <h6 class="form-section-header mt-4"><?php $this->_('DomainResellerApi.tab_hosts.heading_add'); ?></h6>
+    <p class="text-muted"><?php $this->_('DomainResellerApi.tab_hosts.add_description'); ?></p>
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <?php $this->Form->label($this->_('DomainResellerApi.tab_hosts.field_hostname', true), 'host_hostname', ['class' => 'form-label']); ?>
+            <?php $this->Form->fieldText('hostname', ($vars->hostname ?? ''), ['id' => 'host_hostname', 'class' => 'form-control', 'placeholder' => 'ns1.' . ($domain ?? '')]); ?>
+        </div>
+        <div class="col-md-4 mb-3">
+            <?php $this->Form->label($this->_('DomainResellerApi.tab_hosts.field_ipv4', true), 'host_ipv4', ['class' => 'form-label']); ?>
+            <?php $this->Form->fieldText('ipv4', ($vars->ipv4 ?? ''), ['id' => 'host_ipv4', 'class' => 'form-control', 'placeholder' => '192.0.2.1']); ?>
+        </div>
+        <div class="col-md-4 mb-3">
+            <?php $this->Form->label($this->_('DomainResellerApi.tab_hosts.field_ipv6', true), 'host_ipv6', ['class' => 'form-label']); ?>
+            <?php $this->Form->fieldText('ipv6', ($vars->ipv6 ?? ''), ['id' => 'host_ipv6', 'class' => 'form-control', 'placeholder' => '2001:db8::1']); ?>
+        </div>
+    </div>
+    <div class="d-flex justify-content-end">
+        <?php $this->Form->fieldSubmit('save', $this->_('DomainResellerApi.tab_hosts.field_add', true), ['class' => 'btn btn-primary']); ?>
+    </div>
+    <?php
+        $this->Form->end();
+    }
+    ?>
+</div>
