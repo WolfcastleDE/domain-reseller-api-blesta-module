@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: curl, json, mbstring, intl
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run tests
+        run: vendor/bin/phpunit --colors=always
+
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Inject version
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          MODULE_DIR=components/modules/domain_reseller_api
+          sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"${VERSION}\"/" "$MODULE_DIR/config.json"
+          sed -i "s/const VERSION = '[^']*';/const VERSION = '${VERSION}';/" "$MODULE_DIR/apis/domain_reseller_api_client.php"
+          grep -q "\"version\": \"${VERSION}\"" "$MODULE_DIR/config.json"
+
+      - name: Package module
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          ARCHIVE="domain-reseller-api-blesta-${VERSION}"
+          mkdir -p "dist/${ARCHIVE}"
+          cp -r components "dist/${ARCHIVE}/"
+          cp LICENSE README.md "dist/${ARCHIVE}/"
+          cd dist
+          zip -r "${ARCHIVE}.zip" "${ARCHIVE}/"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/domain-reseller-api-blesta-${{ steps.version.outputs.version }}.zip
+          generate_release_notes: true

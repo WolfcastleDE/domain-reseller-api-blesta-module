@@ -1,0 +1,73 @@
+<?php
+$client = !empty($client);
+$managed = !empty($dnssec['useManagedDns']);
+?>
+<div class="domain-reseller-api<?php echo $client ? ' p-3' : ''; ?>">
+    <h6 class="form-section-header"><?php $this->_('DomainResellerApi.tab_dnssec.heading'); ?></h6>
+
+    <?php if (!empty($pending)) { ?>
+    <div class="alert alert-info"><?php $this->_('DomainResellerApi.!notice.pending'); ?></div>
+    <?php } ?>
+
+    <p class="text-muted"><?php $this->_($managed ? 'DomainResellerApi.tab_dnssec.text_managed' : 'DomainResellerApi.tab_dnssec.text_custom'); ?></p>
+    <p>
+        <strong><?php $this->_('DomainResellerApi.tab_dnssec.status'); ?>:</strong>
+        <?php if (!empty($dnssec['dnssecEnabled'])) { ?>
+        <span class="badge bg-success badge-success"><?php $this->_('DomainResellerApi.tab_dnssec.status_enabled'); ?></span>
+        <?php } else { ?>
+        <span class="badge bg-secondary badge-secondary"><?php $this->_('DomainResellerApi.tab_dnssec.status_disabled'); ?></span>
+        <?php } ?>
+    </p>
+
+    <?php if (!empty($dnssec['keys'])) { ?>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th><?php $this->_('DomainResellerApi.tab_dnssec.heading_keytype'); ?></th>
+                    <th><?php $this->_('DomainResellerApi.tab_dnssec.heading_algorithm'); ?></th>
+                    <th><?php $this->_('DomainResellerApi.tab_dnssec.heading_ds'); ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($dnssec['keys'] as $key) { ?>
+                <tr>
+                    <td><?php echo $this->Html->safe(strtoupper($key['keytype'] ?? '')); ?></td>
+                    <td><?php echo $this->Html->safe(($key['algorithm'] ?? '') . (!empty($key['bits']) ? ' / ' . $key['bits'] . ' bit' : '')); ?></td>
+                    <td style="word-break: break-all; font-family: monospace;">
+                        <?php
+                        foreach ((array) ($key['ds'] ?? []) as $ds) {
+                            echo $this->Html->safe($ds) . '<br />';
+                        }
+                        ?>
+                    </td>
+                </tr>
+                <?php } ?>
+            </tbody>
+        </table>
+    </div>
+    <?php } ?>
+
+    <?php
+    if (empty($pending)) {
+        $this->Form->create();
+    ?>
+    <div class="mb-3 form-check">
+        <?php $this->Form->fieldCheckbox('dnssec_enabled', '1', ($vars->dnssec_enabled ?? '0') == '1', ['id' => 'dnssec_enabled', 'class' => 'form-check-input']); ?>
+        <?php $this->Form->label($this->_('DomainResellerApi.tab_dnssec.field_enabled', true), 'dnssec_enabled', ['class' => 'form-check-label']); ?>
+    </div>
+    <?php if (!$managed) { ?>
+    <div class="mb-3">
+        <?php $this->Form->label($this->_('DomainResellerApi.tab_dnssec.field_dnskeys', true), 'dnskeys', ['class' => 'form-label']); ?>
+        <?php $this->Form->fieldTextarea('dnskeys', ($vars->dnskeys ?? ''), ['id' => 'dnskeys', 'class' => 'form-control', 'rows' => 5, 'style' => 'font-family: monospace;']); ?>
+        <div class="form-text"><?php $this->_('DomainResellerApi.tab_dnssec.tooltip_dnskeys'); ?></div>
+    </div>
+    <?php } ?>
+    <div class="d-flex justify-content-end">
+        <?php $this->Form->fieldSubmit('save', $this->_('DomainResellerApi.tab_dnssec.field_update', true), ['class' => 'btn btn-primary']); ?>
+    </div>
+    <?php
+        $this->Form->end();
+    }
+    ?>
+</div>

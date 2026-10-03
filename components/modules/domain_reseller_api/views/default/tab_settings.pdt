@@ -1,0 +1,139 @@
+<?php
+$client = !empty($client);
+$status = $info['status'] ?? '';
+$yes_no = function ($value) {
+    return $this->_($value ? 'DomainResellerApi.tab_settings.yes' : 'DomainResellerApi.tab_settings.no', true);
+};
+?>
+<div class="domain-reseller-api<?php echo $client ? ' p-3' : ''; ?>">
+    <h6 class="form-section-header"><?php $this->_('DomainResellerApi.tab_settings.heading'); ?></h6>
+    <div class="table-responsive">
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th class="w-25"><?php $this->_('DomainResellerApi.tab_settings.domain'); ?></th>
+                    <td><?php echo $this->Html->safe($domain ?? ''); ?></td>
+                </tr>
+                <tr>
+                    <th><?php $this->_('DomainResellerApi.tab_settings.status'); ?></th>
+                    <td>
+                        <?php
+                        echo $this->Html->safe($this->_('DomainResellerApi.status.' . $status, true) ?: $status);
+                        if (!$client && !empty($state['description'])) {
+                            echo ' &ndash; ' . $this->Html->safe($state['description']);
+                        }
+                        ?>
+                    </td>
+                </tr>
+                <tr>
+                    <th><?php $this->_('DomainResellerApi.tab_settings.registered'); ?></th>
+                    <td><?php echo $this->Html->safe($dates['registered'] ?: '-'); ?></td>
+                </tr>
+                <tr>
+                    <th><?php $this->_('DomainResellerApi.tab_settings.expires'); ?></th>
+                    <td><?php echo $this->Html->safe($dates['expires'] ?: '-'); ?></td>
+                </tr>
+                <?php if (!$client) { ?>
+                <tr>
+                    <th><?php $this->_('DomainResellerApi.tab_settings.auto_renew'); ?></th>
+                    <td><?php echo $this->Html->safe($yes_no(!empty($info['autoRenew']))); ?></td>
+                </tr>
+                <tr>
+                    <th><?php $this->_('DomainResellerApi.tab_settings.managed_dns'); ?></th>
+                    <td><?php echo $this->Html->safe($yes_no(!empty($info['useManagedDns']))); ?></td>
+                </tr>
+                <tr>
+                    <th><?php $this->_('DomainResellerApi.tab_settings.dnssec'); ?></th>
+                    <td><?php echo $this->Html->safe($yes_no(!empty($info['dnssecEnabled']))); ?></td>
+                </tr>
+                <?php } ?>
+                <tr>
+                    <th><?php $this->_('DomainResellerApi.tab_settings.nameservers'); ?></th>
+                    <td><?php echo $this->Html->safe(implode(', ', (array) ($info['nameservers'] ?? []))); ?></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <?php
+    if (!empty($lock['supported'])) {
+        $this->Form->create();
+        $this->Form->fieldHidden('action', 'transfer_lock');
+    ?>
+    <h6 class="form-section-header mt-4"><?php $this->_('DomainResellerApi.tab_settings.heading_transfer_lock'); ?></h6>
+    <p class="text-muted"><?php $this->_('DomainResellerApi.tab_settings.transfer_lock_description'); ?></p>
+    <div class="mb-3">
+        <div class="form-check">
+            <?php $this->Form->fieldRadio('locked', '1', !empty($lock['locked']), ['id' => 'locked_1', 'class' => 'form-check-input']); ?>
+            <?php $this->Form->label($this->_('DomainResellerApi.tab_settings.transfer_lock_on', true), 'locked_1', ['class' => 'form-check-label']); ?>
+        </div>
+        <div class="form-check">
+            <?php $this->Form->fieldRadio('locked', '0', empty($lock['locked']), ['id' => 'locked_0', 'class' => 'form-check-input']); ?>
+            <?php $this->Form->label($this->_('DomainResellerApi.tab_settings.transfer_lock_off', true), 'locked_0', ['class' => 'form-check-label']); ?>
+        </div>
+    </div>
+    <div class="d-flex justify-content-end">
+        <?php $this->Form->fieldSubmit('save_lock', $this->_('DomainResellerApi.tab_settings.field_update', true), ['class' => 'btn btn-primary']); ?>
+    </div>
+    <?php
+        $this->Form->end();
+    }
+
+    if (!$client) {
+        $this->Form->create();
+        $this->Form->fieldHidden('action', 'auto_renew');
+    ?>
+    <h6 class="form-section-header mt-4"><?php $this->_('DomainResellerApi.tab_settings.heading_auto_renew'); ?></h6>
+    <p class="text-muted"><?php $this->_('DomainResellerApi.tab_settings.auto_renew_description'); ?></p>
+    <div class="mb-3">
+        <div class="form-check">
+            <?php $this->Form->fieldRadio('auto_renew', '1', !empty($info['autoRenew']), ['id' => 'auto_renew_1', 'class' => 'form-check-input']); ?>
+            <?php $this->Form->label($this->_('DomainResellerApi.tab_settings.auto_renew_on', true), 'auto_renew_1', ['class' => 'form-check-label']); ?>
+        </div>
+        <div class="form-check">
+            <?php $this->Form->fieldRadio('auto_renew', '0', empty($info['autoRenew']), ['id' => 'auto_renew_0', 'class' => 'form-check-input']); ?>
+            <?php $this->Form->label($this->_('DomainResellerApi.tab_settings.auto_renew_off', true), 'auto_renew_0', ['class' => 'form-check-label']); ?>
+        </div>
+    </div>
+    <div class="d-flex justify-content-end">
+        <?php $this->Form->fieldSubmit('save', $this->_('DomainResellerApi.tab_settings.field_update', true), ['class' => 'btn btn-primary']); ?>
+    </div>
+    <?php
+        $this->Form->end();
+    }
+
+    if (!empty($epp_allowed)) {
+    ?>
+    <h6 class="form-section-header mt-4"><?php $this->_('DomainResellerApi.tab_settings.heading_auth_code'); ?></h6>
+    <?php if (empty($supports_auth_code)) { ?>
+    <div class="alert alert-info"><?php $this->_($client ? 'DomainResellerApi.tab_settings.auth_code_unsupported_client' : 'DomainResellerApi.tab_settings.auth_code_unsupported'); ?></div>
+    <?php
+        } else {
+            if ($auth_code !== null) {
+    ?>
+    <div class="alert alert-success">
+        <strong><?php $this->_('DomainResellerApi.tab_settings.auth_code'); ?>:</strong> <code><?php echo $this->Html->safe($auth_code); ?></code>
+    </div>
+    <?php
+            }
+    ?>
+    <div class="d-flex gap-2">
+        <?php
+        $this->Form->create(null, ['class' => 'd-inline']);
+        $this->Form->fieldHidden('action', 'get_auth_code');
+        $this->Form->fieldSubmit('get_auth_code', $this->_('DomainResellerApi.tab_settings.field_get_auth_code', true), ['class' => 'btn btn-outline-primary']);
+        $this->Form->end();
+
+        if (!empty($supports_reset)) {
+            $this->Form->create(null, ['class' => 'd-inline']);
+            $this->Form->fieldHidden('action', 'reset_auth_code');
+            $this->Form->fieldSubmit('reset_auth_code', $this->_('DomainResellerApi.tab_settings.field_reset_auth_code', true), ['class' => 'btn btn-outline-secondary']);
+            $this->Form->end();
+        }
+        ?>
+    </div>
+    <?php
+        }
+    }
+    ?>
+</div>

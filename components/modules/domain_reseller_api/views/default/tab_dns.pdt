@@ -1,0 +1,144 @@
+<?php
+$client = !empty($client);
+$tab_url = $client
+    ? $this->base_uri . 'services/manage/' . ($service->id ?? '') . '/tabClientDns/'
+    : $this->base_uri . 'clients/servicetab/' . ($service->client_id ?? '') . '/' . ($service->id ?? '') . '/tabDns/';
+?>
+<div class="domain-reseller-api<?php echo $client ? ' p-3' : ''; ?>">
+    <h6 class="form-section-header"><?php $this->_('DomainResellerApi.tab_dns.heading'); ?></h6>
+
+    <?php if (!empty($pending)) { ?>
+    <div class="alert alert-info"><?php $this->_('DomainResellerApi.!notice.pending'); ?></div>
+    <?php } elseif (empty($enabled)) { ?>
+    <div class="alert alert-info"><?php $this->_('DomainResellerApi.tab_dns.text_dns_disabled'); ?></div>
+    <?php
+        $this->Form->create();
+        $this->Form->fieldHidden('action', 'enable_managed_dns');
+        $this->Form->fieldSubmit('enable', $this->_('DomainResellerApi.tab_dns.field_enable', true), ['class' => 'btn btn-primary']);
+        $this->Form->end();
+    } else {
+    ?>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th><?php $this->_('DomainResellerApi.tab_dns.heading_type'); ?></th>
+                    <th><?php $this->_('DomainResellerApi.tab_dns.heading_name'); ?></th>
+                    <th><?php $this->_('DomainResellerApi.tab_dns.heading_content'); ?></th>
+                    <th><?php $this->_('DomainResellerApi.tab_dns.heading_ttl'); ?></th>
+                    <th><?php $this->_('DomainResellerApi.tab_dns.heading_priority'); ?></th>
+                    <th><?php $this->_('DomainResellerApi.tab_dns.heading_options'); ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($records)) { ?>
+                <tr>
+                    <td colspan="6" class="text-muted"><?php $this->_('DomainResellerApi.tab_dns.text_no_dns_records'); ?></td>
+                </tr>
+                <?php
+                }
+                foreach (($records ?? []) as $record) {
+                ?>
+                <tr>
+                    <td><span class="badge bg-secondary badge-secondary"><?php echo $this->Html->safe($record['type'] ?? ''); ?></span></td>
+                    <td><?php echo $this->Html->safe($record['name'] ?? ''); ?></td>
+                    <td style="word-break: break-all;"><?php echo $this->Html->safe($record['content'] ?? ''); ?></td>
+                    <td><?php echo $this->Html->safe($record['ttl'] ?? ''); ?></td>
+                    <td><?php echo $this->Html->safe($record['priority'] ?? ''); ?></td>
+                    <td class="text-nowrap">
+                        <?php if (!empty($record['managed'])) { ?>
+                        <span class="text-muted"><?php $this->_('DomainResellerApi.tab_dns.managed_record'); ?></span>
+                        <?php } else { ?>
+                        <a class="btn btn-sm btn-outline-secondary" href="<?php echo $this->Html->safe($tab_url . '?edit=' . rawurlencode($record['id'] ?? '')); ?>"><?php $this->_('DomainResellerApi.tab_dns.field_edit'); ?></a>
+                        <?php
+                            $this->Form->create(null, ['class' => 'd-inline']);
+                            $this->Form->fieldHidden('action', 'delete');
+                            $this->Form->fieldHidden('record_id', $record['id'] ?? '');
+                        ?>
+                        <button type="submit" class="btn btn-sm btn-outline-danger"><?php $this->_('DomainResellerApi.tab_dns.field_delete'); ?></button>
+                        <?php
+                            $this->Form->end();
+                        }
+                        ?>
+                    </td>
+                </tr>
+                <?php } ?>
+            </tbody>
+        </table>
+    </div>
+
+    <h6 class="form-section-header mt-4">
+        <?php $this->_(!empty($edit_record) ? 'DomainResellerApi.tab_dns.heading_edit_record' : 'DomainResellerApi.tab_dns.heading_add_record'); ?>
+    </h6>
+    <?php
+    $this->Form->create();
+    $this->Form->fieldHidden('action', !empty($edit_record) ? 'update' : 'add');
+    if (!empty($edit_record)) {
+        $this->Form->fieldHidden('record_id', $edit_record['id'] ?? '');
+    }
+    ?>
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <?php
+            $this->Form->label($this->_('DomainResellerApi.tab_dns.field_type', true), 'type', ['class' => 'form-label']);
+            if (!empty($edit_record)) {
+                $this->Form->fieldText('type_display', $edit_record['type'] ?? '', ['class' => 'form-control', 'disabled' => 'disabled']);
+            } else {
+                $this->Form->fieldSelect('type', ($record_types ?? []), ($vars->type ?? 'A'), ['id' => 'type', 'class' => 'form-select form-control']);
+            }
+            ?>
+        </div>
+        <div class="col-md-9 mb-3">
+            <?php $this->Form->label($this->_('DomainResellerApi.tab_dns.field_name', true), 'name', ['class' => 'form-label']); ?>
+            <?php $this->Form->fieldText('name', ($vars->name ?? ''), ['id' => 'name', 'class' => 'form-control', 'placeholder' => '@']); ?>
+            <div class="form-text"><?php $this->_('DomainResellerApi.tab_dns.tooltip_name'); ?></div>
+        </div>
+        <div class="col-12 mb-3">
+            <?php $this->Form->label($this->_('DomainResellerApi.tab_dns.field_content', true), 'content', ['class' => 'form-label']); ?>
+            <?php $this->Form->fieldTextarea('content', ($vars->content ?? ''), ['id' => 'content', 'class' => 'form-control', 'rows' => 2]); ?>
+            <div class="form-text"><?php $this->_('DomainResellerApi.tab_dns.tooltip_content'); ?></div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <?php $this->Form->label($this->_('DomainResellerApi.tab_dns.field_ttl', true), 'ttl', ['class' => 'form-label']); ?>
+            <?php $this->Form->fieldText('ttl', ($vars->ttl ?? '3600'), ['id' => 'ttl', 'class' => 'form-control']); ?>
+        </div>
+        <div class="col-md-6 mb-3">
+            <?php $this->Form->label($this->_('DomainResellerApi.tab_dns.field_priority', true), 'priority', ['class' => 'form-label']); ?>
+            <?php $this->Form->fieldText('priority', ($vars->priority ?? ''), ['id' => 'priority', 'class' => 'form-control']); ?>
+            <div class="form-text"><?php $this->_('DomainResellerApi.tab_dns.tooltip_priority'); ?></div>
+        </div>
+    </div>
+    <div class="d-flex justify-content-end gap-2">
+        <?php if (!empty($edit_record)) { ?>
+        <a class="btn btn-outline-secondary" href="<?php echo $this->Html->safe($tab_url); ?>"><?php $this->_('DomainResellerApi.tab_dns.field_cancel'); ?></a>
+        <?php } ?>
+        <?php $this->Form->fieldSubmit('save', $this->_(!empty($edit_record) ? 'DomainResellerApi.tab_dns.field_update' : 'DomainResellerApi.tab_dns.field_add', true), ['class' => 'btn btn-primary']); ?>
+    </div>
+    <?php $this->Form->end(); ?>
+
+    <?php if (!$client) { ?>
+    <h6 class="form-section-header mt-4"><?php $this->_('DomainResellerApi.tab_dns.heading_zone'); ?></h6>
+    <?php if ($zone_file !== null) { ?>
+    <p><?php $this->_('DomainResellerApi.tab_dns.text_zone_export'); ?></p>
+    <textarea class="form-control mb-3" rows="12" readonly="readonly" style="font-family: monospace;"><?php echo $this->Html->safe($zone_file); ?></textarea>
+    <?php } else { ?>
+    <p><a href="<?php echo $this->Html->safe($tab_url . '?export=1'); ?>"><?php $this->_('DomainResellerApi.tab_dns.field_export'); ?></a></p>
+    <?php
+    }
+    $this->Form->create();
+    $this->Form->fieldHidden('action', 'import');
+    ?>
+    <div class="mb-3">
+        <?php $this->Form->label($this->_('DomainResellerApi.tab_dns.field_zone_file', true), 'zone_file', ['class' => 'form-label']); ?>
+        <?php $this->Form->fieldTextarea('zone_file', ($vars->zone_file ?? ''), ['id' => 'zone_file', 'class' => 'form-control', 'rows' => 8, 'style' => 'font-family: monospace;']); ?>
+        <div class="form-text"><?php $this->_('DomainResellerApi.tab_dns.tooltip_zone_file'); ?></div>
+    </div>
+    <div class="d-flex justify-content-end">
+        <?php $this->Form->fieldSubmit('import', $this->_('DomainResellerApi.tab_dns.field_import', true), ['class' => 'btn btn-outline-primary']); ?>
+    </div>
+    <?php
+        $this->Form->end();
+    }
+    ?>
+    <?php } ?>
+</div>
